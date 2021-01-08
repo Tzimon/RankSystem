@@ -1,8 +1,6 @@
 package de.tzimon.ranksystem.managers;
 
 import de.tzimon.ranksystem.RankSystem;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -14,29 +12,28 @@ import java.util.Set;
 
 public abstract class FileManager {
 
-    private static Set<FileManager> fileManagers = new HashSet<>();
+    private static final Set<FileManager> FILE_MANAGERS = new HashSet<>();
 
-    private RankSystem plugin;
+    private final RankSystem plugin;
 
-    private File file;
+    private final File file;
     private Configuration config;
 
     public FileManager() {
-        fileManagers.add(this);
+        FILE_MANAGERS.add(this);
 
         this.plugin = RankSystem.getPlugin();
 
-        this.file = new File(this.plugin.getDataFolder() + "/" + this.getFileName());
+        this.file = new File(this.plugin.getDataFolder() + "/" + this.getFullFileName());
         this.file.getParentFile().mkdirs();
 
         try {
             if (!this.file.exists())
                 this.file.createNewFile();
 
-            reloadConfig();
+            this.reloadConfig();
         } catch (IOException ignored) {
-            ProxyServer.getInstance().getConsole().sendMessage(
-                    new TextComponent(this.plugin.prefix + "§cUnable to create '" + this.getFullFileName() + "'"));
+            RankSystem.log(this.plugin.prefix + "§cUnable to create '" + this.getFullFileName() + "'");
         }
     }
 
@@ -44,13 +41,25 @@ public abstract class FileManager {
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(this.config, this.file);
         } catch (IOException ignored) {
-            ProxyServer.getInstance().getConsole().sendMessage(
-                    new TextComponent(this.plugin.prefix + "§cUnable to save '" + this.getFullFileName() + "'"));
+            RankSystem.log(this.plugin.prefix + "§cUnable to save '" + this.getFullFileName() + "'");
         }
     }
 
     public void reloadConfig() {
-        this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(this.getFullFileName());
+        try {
+            this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(this.file);
+        } catch (IOException ignored) {
+            RankSystem.log(this.plugin.prefix + "§cUnable to load '" + this.getFullFileName() + "'");
+        }
+    }
+
+    public void set(String path, Object object) {
+        this.plugin.getConfigManager().reloadConfig();
+
+        this.getConfig().set(path, object);
+
+        if (this.plugin.getConfigManager().getConfig().getBoolean("options.config.autoSave"))
+            this.saveConfig();
     }
 
     public Configuration getConfig() {
@@ -64,7 +73,7 @@ public abstract class FileManager {
     protected abstract String getFileName();
 
     public static void saveAll() {
-        fileManagers.forEach(FileManager::saveConfig);
+        FILE_MANAGERS.forEach(FileManager::saveConfig);
     }
 
 }
