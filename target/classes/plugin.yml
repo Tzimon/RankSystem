@@ -1,0 +1,12 @@
+name: RankSystem
+version: "1.0"
+main: de.tzimon.ranksystem.RankSystem
+author: Tzimon
+authors:
+  - Skylike
+
+commands:
+  rank:
+    usage: /rank
+    aliases: [ranks]
+    description: Creates, deletes, modifies or lists ranks
