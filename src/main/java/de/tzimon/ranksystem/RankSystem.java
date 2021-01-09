@@ -33,6 +33,7 @@ public class RankSystem extends Plugin {
         this.playerManager = new PlayerManager();
 
         PermissionLoader.load();
+        Rank.registerForbiddenNames();
 
         final ProxyServer proxyServer = ProxyServer.getInstance();
         final PluginManager pluginManager = proxyServer.getPluginManager();

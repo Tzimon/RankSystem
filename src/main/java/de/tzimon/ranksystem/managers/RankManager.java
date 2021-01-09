@@ -4,6 +4,7 @@ import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.Rank;
 import de.tzimon.ranksystem.events.RankCreateEvent;
 import de.tzimon.ranksystem.events.RankDeleteEvent;
+import de.tzimon.ranksystem.utils.CustomPlayer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 
@@ -32,7 +33,7 @@ public class RankManager extends FileManager {
         });
 
         if (this.getConfig().contains("default"))
-            this.defaultRank = this.createRank(ProxyServer.getInstance().getConsole(), this.getConfig().getString("default"));
+            this.defaultRank = this.getRank(this.getConfig().getString("default"));
         else
             this.defaultRank = null;
     }
@@ -96,6 +97,11 @@ public class RankManager extends FileManager {
     }
 
     public void setDefaultRank(Rank defaultRank) {
+        CustomPlayer.getCustomPlayers().values().forEach(player -> {
+            if (player.getRank() == this.defaultRank)
+                player.setRank(defaultRank);
+        });
+
         this.defaultRank = defaultRank;
     }
 

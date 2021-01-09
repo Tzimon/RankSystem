@@ -27,6 +27,8 @@ public class PlayerManager extends FileManager {
             customPlayer.setName(this.getConfig().getString(path + "name"));
 
             if (this.getConfig().contains(path + "rank"))
+                customPlayer.setRank(this.plugin.getRankManager().getRank(this.getConfig().getString(path + "rank")));
+            else
                 customPlayer.setRank(this.plugin.getRankManager().getDefaultRank());
         });
     }

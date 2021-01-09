@@ -5,6 +5,8 @@ import java.util.Set;
 
 public class Rank {
 
+    public static final Set<String> FORBIDDEN_NAMES = new HashSet<>();
+
     private final String name;
 
     private final Set<Permission> permissions;
@@ -12,6 +14,11 @@ public class Rank {
     public Rank(final String name) {
         this.name = name;
         this.permissions = new HashSet<>();
+    }
+
+    public static void registerForbiddenNames() {
+        Rank.FORBIDDEN_NAMES.add(".*\\..*");
+        Rank.FORBIDDEN_NAMES.add("all");
     }
 
     public String getName() {

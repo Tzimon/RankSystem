@@ -44,6 +44,13 @@ public class RankCommand extends Command {
 
             final String rankName = args[1];
 
+            for (String regex : Rank.FORBIDDEN_NAMES) {
+                if (rankName.matches(regex)) {
+                    sender.sendMessage(new TextComponent("§cThat name is not allowed"));
+                    return;
+                }
+            }
+
             if (this.rankManager.createRank(sender, rankName) == null) {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat rank already exists"));
                 return;
