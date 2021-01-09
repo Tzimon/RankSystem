@@ -32,6 +32,7 @@ public abstract class FileManager {
                 this.file.createNewFile();
 
             this.reloadConfig();
+            this.load();
         } catch (IOException ignored) {
             RankSystem.log(this.plugin.prefix + "§cUnable to create '" + this.getFullFileName() + "'");
         }
@@ -45,21 +46,14 @@ public abstract class FileManager {
         }
     }
 
+    protected void load(){}
+
     public void reloadConfig() {
         try {
             this.config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(this.file);
         } catch (IOException ignored) {
             RankSystem.log(this.plugin.prefix + "§cUnable to load '" + this.getFullFileName() + "'");
         }
-    }
-
-    public void set(String path, Object object) {
-        this.plugin.getConfigManager().reloadConfig();
-
-        this.getConfig().set(path, object);
-
-        if (this.plugin.getConfigManager().getConfig().getBoolean("options.config.autoSave"))
-            this.saveConfig();
     }
 
     public Configuration getConfig() {

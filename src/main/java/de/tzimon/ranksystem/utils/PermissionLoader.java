@@ -3,36 +3,77 @@ package de.tzimon.ranksystem.utils;
 import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.RankSystem;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.*;
 
 public class PermissionLoader {
 
-    private static final String FILE_NAME = "default_permissions.txt";
+    private static final String INTERNAL_FILE_NAME = "default_permissions.txt";
+    private static final String EXTERNAL_FILE_NAME = "permission_map.txt";
 
     public static void load() {
-        StringBuilder stringBuilder = new StringBuilder();
+        final Set<String> permissions = new HashSet<>();
+        permissions.addAll(PermissionLoader.loadInternalFile(PermissionLoader.INTERNAL_FILE_NAME));
+        permissions.addAll(PermissionLoader.loadExternalFile(RankSystem.getPlugin().getDataFolder() + "/" + PermissionLoader.EXTERNAL_FILE_NAME));
 
-        InputStream inputStream = PermissionLoader.class.getClassLoader().getResourceAsStream(PermissionLoader.FILE_NAME);
-        assert inputStream != null : "Unable to find " + PermissionLoader.FILE_NAME;
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        for (String permission : permissions) {
+            if (!permission.equalsIgnoreCase(""))
+                Permission.get(permission);
+        }
+    }
 
-        try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+    private static Collection<String> loadInternalFile(String filePath) {
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        final InputStream inputStream = PermissionLoader.class.getClassLoader().getResourceAsStream(filePath);
+
+        if (inputStream == null) {
+            RankSystem.log("Unable to find " + filePath);
+            return new ArrayList<>();
+        }
+
+        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+
+        try (final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             String input;
 
             while ((input = bufferedReader.readLine()) != null)
-                stringBuilder.append(input).append("\n");
+                stringBuilder.append(input);
         } catch (IOException ignored) {
             RankSystem.log("§cUnable to load default permissions");
         }
 
-        String[] permissions = stringBuilder.toString().split(",");
+        final String[] permissions = stringBuilder.toString().split(",");
+        return Arrays.asList(permissions);
+    }
 
-        for (String permission : permissions) {
-            Permission.get(permission);
+    private static Collection<String> loadExternalFile(String filePath) {
+        final File file = new File(filePath);
+
+        try {
+            if (!file.exists())
+                file.createNewFile();
+
+            final FileReader fileReader = new FileReader(file);
+            final BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            final StringBuilder stringBuilder = new StringBuilder();
+            String input;
+
+            while ((input = bufferedReader.readLine()) != null) {
+                if (!input.startsWith("#"))
+                    stringBuilder.append(input);
+            }
+
+            bufferedReader.close();
+
+            final String[] permissions = stringBuilder.toString().split(",");
+            return Arrays.asList(permissions);
+        } catch (IOException ignored) {
+            RankSystem.log("§cUnable to load default permissions");
+            return new ArrayList<>();
         }
     }
+
 
 }
