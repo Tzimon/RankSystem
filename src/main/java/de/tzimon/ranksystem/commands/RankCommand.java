@@ -44,15 +44,15 @@ public class RankCommand extends Command {
 
             final String rankName = args[1];
 
-            if (!this.rankManager.createRank(sender, rankName)) {
+            if (this.rankManager.createRank(sender, rankName) == null) {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat rank already exists"));
                 return;
             }
 
-            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7The rank §6" + rankName + " §7was created"));
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7The rank §a" + rankName + " §7was created"));
 
             if (sender != ProxyServer.getInstance().getConsole())
-                RankSystem.log("§6" + sender.getName() + " §7created a new rank with the name §6" + rankName);
+                RankSystem.log("§a" + sender.getName() + " §7created a new rank with the name §a" + rankName);
         } else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
             if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.modify"))) {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
@@ -66,14 +66,43 @@ public class RankCommand extends Command {
                 return;
             }
 
-            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7The rank §6" + rankName + " §7was deleted"));
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7The rank §a" + rankName + " §7was deleted"));
 
             if (sender != ProxyServer.getInstance().getConsole())
-                RankSystem.log("§6" + sender.getName() + " §7deleted the rank with the name §6" + rankName);
+                RankSystem.log("§a" + sender.getName() + " §7deleted the rank with the name §a" + rankName);
         } else if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.show"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
             final Set<Rank> ranks = this.rankManager.getRanks();
 
-            
+            if (ranks.isEmpty())
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThere are no ranks"));
+            else {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§6§lRanks:"));
+                ranks.forEach(rank -> sender.sendMessage(new TextComponent(this.plugin.prefix + "§8- §a" + rank.getName())));
+            }
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("info")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.show"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
+            final String rankName = args[1];
+            final Rank rank = this.rankManager.getRank(rankName);
+
+            if (rank == null) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat rank does not exist"));
+                return;
+            }
+
+            final boolean isDefault = rank == this.rankManager.getDefaultRank();
+
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§6§lInfo:"));
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7Name: §a" + rank.getName()));
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§7Default: " + (isDefault ? "§aYes" : "§cNo")));
         } else if (args.length == 3 && args[0].equalsIgnoreCase("assign")) {
             if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.assign"))) {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
@@ -99,12 +128,91 @@ public class RankCommand extends Command {
 
             customPlayer.setRank(rank);
 
-            final String message = this.plugin.prefix + "§6" + customPlayer.getName() + " §7now has the §6"
-                    + rank.getName() + " §7rank";
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + customPlayer.getName() + " §7now has the §a"
+                    + rank.getName() + " §7rank"));
+
+            if (sender != ProxyServer.getInstance().getConsole())
+                RankSystem.log(this.plugin.prefix + "§a" + sender.getName() + " §7gave §a" + customPlayer.getName()
+                        + " §7the §a" + rank.getName() + " §7rank");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("revoke")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.assign"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
+            final String targetName = args[1];
+            final CustomPlayer customPlayer = this.playerManager.getPlayer(targetName);
+
+            if (customPlayer == null) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat player has never been online"));
+                return;
+            }
+
+            final Rank defaultRank = this.rankManager.getDefaultRank();
+            final String defaultRankName = defaultRank == null ? "none" : defaultRank.getName();
+
+            if (customPlayer.getRank() == defaultRank) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat player already has the default rank ("
+                        + defaultRankName + ")"));
+                return;
+            }
+
+            customPlayer.setRank(defaultRank);
+            
+            final String message = this.plugin.prefix + "§a" + customPlayer.getName() + " §7now has the default rank (§a"
+                    + defaultRankName + "§7)";
+
             sender.sendMessage(new TextComponent(message));
 
             if (sender != ProxyServer.getInstance().getConsole())
-                RankSystem.log(message);
+                RankSystem.log(this.plugin.prefix + "§a" + sender.getName() + " §7gave §a" + customPlayer.getName()
+                        + " §7the default rank (§a" + defaultRankName + "§7)");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("player")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.show"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
+            final String targetName = args[1];
+            final CustomPlayer customPlayer = this.playerManager.getPlayer(targetName);
+
+            if (customPlayer == null) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat player has never been online"));
+                return;
+            }
+
+            final Rank rank = customPlayer.getRank();
+
+            if (rank == null)
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + customPlayer.getName() + "§7 has no rank"));
+            else
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + customPlayer.getName() + " §7has the §a"
+                        + rank.getName() + " §7rank"));
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("default")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.modify"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
+            final String rankName = args[1];
+            final Rank rank = this.rankManager.getRank(rankName);
+
+            if (rank == null) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat rank does not exist"));
+                return;
+            }
+
+            if (rank == this.rankManager.getDefaultRank()) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§c" + rank.getName() + " is already the default rank"));
+                return;
+            }
+
+            this.rankManager.setDefaultRank(rank);
+
+            sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + rank.getName() + " §7is now the default rank"));
+
+            if (sender != ProxyServer.getInstance().getConsole())
+                RankSystem.log(this.plugin.prefix + "§a" + sender.getName() + " §7made §a" + rank.getName() + " §7the default rank");
         } else {
             CommandUtil.RANK.sendUsage(sender);
         }

@@ -56,7 +56,7 @@ public class RankSystem extends Plugin {
         this.configManager.setDefault("messages.noPermission", this.noPermission);
 
         this.configManager.setDefault("permissions.rank.command", "ranks");
-        this.configManager.setDefault("permissions.rank.show", "ranks");
+        this.configManager.setDefault("permissions.rank.show", "ranks.show");
         this.configManager.setDefault("permissions.rank.modify", "ranks.modify");
         this.configManager.setDefault("permissions.rank.assign", "ranks.assign");
         this.configManager.setDefault("permissions.rank.display", "ranks.display");

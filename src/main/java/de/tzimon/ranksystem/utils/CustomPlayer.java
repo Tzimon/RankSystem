@@ -50,10 +50,6 @@ public class CustomPlayer {
         return player;
     }
 
-    public UUID getUuid() {
-        return uuid;
-    }
-
     public void setName(String name) {
         this.name = name;
     }

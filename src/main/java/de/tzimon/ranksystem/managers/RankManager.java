@@ -1,26 +1,23 @@
 package de.tzimon.ranksystem.managers;
 
+import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.Rank;
-import de.tzimon.ranksystem.RankSystem;
 import de.tzimon.ranksystem.events.RankCreateEvent;
 import de.tzimon.ranksystem.events.RankDeleteEvent;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class RankManager extends FileManager {
 
-    private RankSystem plugin;
-
     private Set<Rank> ranks;
-    private Rank defaultRank = null;
+    private Rank defaultRank;
 
     @Override
     protected void load() {
-        this.plugin = RankSystem.getPlugin();
-
         this.ranks = new HashSet<>();
 
         if (this.getConfig() == null || !this.getConfig().contains("ranks"))
@@ -28,10 +25,16 @@ public class RankManager extends FileManager {
 
         this.getConfig().getSection("ranks").getKeys().forEach(rankName -> {
             final String path = "ranks." + rankName + ".";
-            final Rank rank = new Rank(rankName);
+            final Rank rank = this.createRank(ProxyServer.getInstance().getConsole(), rankName);
 
-            rank.getPermissions().addAll(this.getConfig().get(path + "permissions", rank.getPermissions()));
+            this.getConfig().getStringList(path + "permissions").forEach(permission ->
+                    rank.getPermissions().add(Permission.get(permission)));
         });
+
+        if (this.getConfig().contains("default"))
+            this.defaultRank = this.createRank(ProxyServer.getInstance().getConsole(), this.getConfig().getString("default"));
+        else
+            this.defaultRank = null;
     }
 
     @Override
@@ -40,8 +43,11 @@ public class RankManager extends FileManager {
 
         this.ranks.forEach(rank -> {
             final String path = "ranks." + rank.getName() + ".";
-            this.getConfig().set(path + "permissions", rank.getPermissions());
+            this.getConfig().set(path + "permissions", new ArrayList<>(rank.getPermissions()));
         });
+
+        if (this.defaultRank != null)
+            this.getConfig().set("default", this.defaultRank.getName());
 
         super.saveConfig();
     }
@@ -59,15 +65,15 @@ public class RankManager extends FileManager {
         return this.getRank(name) != null;
     }
 
-    public boolean createRank(final CommandSender sender, final String rankName) {
+    public Rank createRank(final CommandSender sender, final String rankName) {
         if (this.exists(rankName))
-            return false;
+            return null;
 
         final Rank rank = new Rank(rankName);
         this.ranks.add(rank);
         ProxyServer.getInstance().getPluginManager().callEvent(new RankCreateEvent(sender, rank));
 
-        return true;
+        return rank;
     }
 
     public boolean deleteRank(final CommandSender sender, final String rankName) {
@@ -75,6 +81,9 @@ public class RankManager extends FileManager {
 
         if (rank == null)
             return false;
+
+        if (this.defaultRank == rank)
+            this.defaultRank = null;
 
         this.ranks.remove(rank);
         ProxyServer.getInstance().getPluginManager().callEvent(new RankDeleteEvent(sender, rank));
@@ -84,6 +93,10 @@ public class RankManager extends FileManager {
 
     public final Set<Rank> getRanks() {
         return new HashSet<>(this.ranks);
+    }
+
+    public void setDefaultRank(Rank defaultRank) {
+        this.defaultRank = defaultRank;
     }
 
     public Rank getDefaultRank() {
