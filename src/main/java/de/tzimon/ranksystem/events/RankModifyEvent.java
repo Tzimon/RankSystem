@@ -6,10 +6,10 @@ import net.md_5.bungee.api.plugin.Event;
 
 public abstract class RankModifyEvent extends Event {
 
-    protected CommandSender sender;
-    protected Rank rank;
+    private final CommandSender sender;
+    private final Rank rank;
 
-    public RankModifyEvent(CommandSender sender, Rank rank) {
+    public RankModifyEvent(final CommandSender sender, final Rank rank) {
         this.sender = sender;
         this.rank = rank;
     }

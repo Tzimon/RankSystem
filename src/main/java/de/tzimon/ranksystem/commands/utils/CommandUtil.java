@@ -26,13 +26,12 @@ public enum CommandUtil {
                 this.sendUsageLine(sender, "rank create <name>", "Creates a new rank");
                 this.sendUsageLine(sender, "rank delete <name>", "Deletes an existing rank");
                 this.sendUsageLine(sender, "rank list", "Lists up all ranks");
-                this.sendUsageLine(sender, "rank info <name>", "Shows some info about a rank");
-                this.sendUsageLine(sender, "rank assign <rank> <player>", "Assigns a rank to a player");
+                this.sendUsageLine(sender, "rank info <rank>", "Shows some info about a rank");
+                this.sendUsageLine(sender, "rank assign <player> <rank>", "Assigns a rank to a player");
                 this.sendUsageLine(sender, "rank revoke <player>", "Revokes the current and assigns the default rank to a player");
                 this.sendUsageLine(sender, "rank player <player>", "Shows the rank of a player");
                 this.sendUsageLine(sender, "rank default <rank>", "Sets the default rank");
-                this.sendUsageLine(sender, "rank permission <rank> add|remove <permission>", "Grants or revokes permissions to or from a rank");
-                this.sendUsageLine(sender, "rank priority <rank> <priority>", "Sets a rank's priority");
+                this.sendUsageLine(sender, "rank permission <rank> add|remove <permission>", "Adds or removes permissions to or from a rank");
                 break;
             default:
                 sender.sendMessage(new TextComponent(this.plugin.prefix + "§cNo help available"));

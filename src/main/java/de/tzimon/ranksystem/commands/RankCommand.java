@@ -4,6 +4,8 @@ import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.Rank;
 import de.tzimon.ranksystem.RankSystem;
 import de.tzimon.ranksystem.commands.utils.CommandUtil;
+import de.tzimon.ranksystem.events.RankAssignEvent;
+import de.tzimon.ranksystem.events.RankRevokeEvent;
 import de.tzimon.ranksystem.managers.ConfigManager;
 import de.tzimon.ranksystem.managers.PlayerManager;
 import de.tzimon.ranksystem.managers.RankManager;
@@ -154,7 +156,9 @@ public class RankCommand extends Command {
                 return;
             }
 
+            final Rank rankBefore = customPlayer.getRank();
             customPlayer.setRank(rank);
+            ProxyServer.getInstance().getPluginManager().callEvent(new RankAssignEvent(sender, rankBefore, rank, customPlayer));
 
             sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + customPlayer.getName() + " §7now has the §a"
                     + rank.getName() + " §7rank"));
@@ -185,8 +189,9 @@ public class RankCommand extends Command {
                 return;
             }
 
+            ProxyServer.getInstance().getPluginManager().callEvent(new RankRevokeEvent(sender, customPlayer.getRank(), customPlayer));
             customPlayer.setRank(defaultRank);
-            
+
             final String message = this.plugin.prefix + "§a" + customPlayer.getName() + " §7now has the default rank (§a"
                     + defaultRankName + "§7)";
 
@@ -235,7 +240,7 @@ public class RankCommand extends Command {
                 return;
             }
 
-            this.rankManager.setDefaultRank(rank);
+            this.rankManager.setDefaultRank(sender, rank);
 
             sender.sendMessage(new TextComponent(this.plugin.prefix + "§a" + rank.getName() + " §7is now the default rank"));
 

@@ -3,6 +3,7 @@ package de.tzimon.ranksystem.managers;
 import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.Rank;
 import de.tzimon.ranksystem.events.RankCreateEvent;
+import de.tzimon.ranksystem.events.RankDefaultEvent;
 import de.tzimon.ranksystem.events.RankDeleteEvent;
 import de.tzimon.ranksystem.utils.CustomPlayer;
 import net.md_5.bungee.api.CommandSender;
@@ -50,7 +51,7 @@ public class RankManager extends FileManager {
             final String path = "ranks." + rank.getName() + ".";
             final List<String> permissions = new ArrayList<>();
 
-            rank.getPermissions().forEach(permission -> permissions.add(permission.getName()));
+            rank.getPermissions().forEach(permission -> permissions.add(permission.getFullPath()));
             this.getConfig().set(path + "permissions", permissions);
         });
 
@@ -103,13 +104,15 @@ public class RankManager extends FileManager {
         return new HashSet<>(this.ranks);
     }
 
-    public void setDefaultRank(Rank defaultRank) {
+    public void setDefaultRank(CommandSender sender, Rank defaultRank) {
         CustomPlayer.getCustomPlayers().values().forEach(player -> {
             if (player.getRank() == this.defaultRank)
                 player.setRank(defaultRank);
         });
 
         this.defaultRank = defaultRank;
+
+        ProxyServer.getInstance().getPluginManager().callEvent(new RankDefaultEvent(sender, defaultRank));
     }
 
     public Rank getDefaultRank() {

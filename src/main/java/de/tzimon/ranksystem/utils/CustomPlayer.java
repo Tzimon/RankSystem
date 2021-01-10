@@ -54,7 +54,8 @@ public class CustomPlayer {
         if (player == null)
             return;
 
-        player.getPermissions().forEach(permission -> player.setPermission(permission, false));
+        final Set<String> permissions = new HashSet<>(player.getPermissions());
+        permissions.forEach(permission -> player.setPermission(permission, false));
 
         final Rank rank = this.getRank();
 

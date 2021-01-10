@@ -11,7 +11,7 @@ public class PostLoginEventListener implements Listener {
     @EventHandler
     public void handlePostLoginEvent(final PostLoginEvent event) {
          final ProxiedPlayer player = event.getPlayer();
-        CustomPlayer.get(player);
+        CustomPlayer.get(player).updateBungeeCordPermissions();
     }
 
 }
