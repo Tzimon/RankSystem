@@ -8,5 +8,4 @@ authors:
 commands:
   rank:
     usage: /rank
-    aliases: [ranks]
     description: Creates, deletes, modifies or lists ranks

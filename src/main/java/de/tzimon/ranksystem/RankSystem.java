@@ -6,6 +6,7 @@ import de.tzimon.ranksystem.managers.ConfigManager;
 import de.tzimon.ranksystem.managers.FileManager;
 import de.tzimon.ranksystem.managers.PlayerManager;
 import de.tzimon.ranksystem.managers.RankManager;
+import de.tzimon.ranksystem.utils.CustomPlayer;
 import de.tzimon.ranksystem.utils.PermissionLoader;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -41,6 +42,8 @@ public class RankSystem extends Plugin {
         this.loadConfig();
         this.loadCommands(pluginManager);
         this.loadListeners(pluginManager);
+
+        ProxyServer.getInstance().getPlayers().forEach(player -> CustomPlayer.get(player).updateBungeeCordPermissions());
     }
 
     @Override

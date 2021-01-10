@@ -242,6 +242,11 @@ public class RankCommand extends Command {
             if (sender != ProxyServer.getInstance().getConsole())
                 RankSystem.log(this.plugin.prefix + "§a" + sender.getName() + " §7made §a" + rank.getName() + " §7the default rank");
         } else if (args.length == 4 && args[0].equalsIgnoreCase("permission")) {
+            if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.modify"))) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
+                return;
+            }
+
             final String rankName = args[1];
             final String permissionName = args[3].toLowerCase();
 
@@ -276,6 +281,11 @@ public class RankCommand extends Command {
                     CommandUtil.RANK.sendUsage(sender);
                     return;
             }
+
+            CustomPlayer.getCustomPlayers().values().forEach(player -> {
+                if (player.getRank() == rank)
+                    player.updateBungeeCordPermissions();
+            });
 
             final String message = this.plugin.prefix + "§7The §a" + permissionName + " §7permission was " + action
                     + " §7the §a" + rankName + " §7rank";

@@ -5,9 +5,7 @@ import de.tzimon.ranksystem.RankSystem;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class CustomPlayer {
 
@@ -50,6 +48,21 @@ public class CustomPlayer {
         return player;
     }
 
+    public void updateBungeeCordPermissions() {
+        final ProxiedPlayer player = this.getPlayer();
+
+        if (player == null)
+            return;
+
+        player.getPermissions().forEach(permission -> player.setPermission(permission, false));
+
+        final Rank rank = this.getRank();
+
+        rank.getPermissions().forEach(permission ->
+                permission.getCorresponding().forEach(corresponding ->
+                        player.setPermission(corresponding.getFullPath(), true)));
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -60,6 +73,7 @@ public class CustomPlayer {
 
     public void setRank(Rank rank) {
         this.rank = rank;
+        this.updateBungeeCordPermissions();
     }
 
     public Rank getRank() {
