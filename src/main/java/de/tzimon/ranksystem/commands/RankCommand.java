@@ -1,5 +1,6 @@
 package de.tzimon.ranksystem.commands;
 
+import de.tzimon.ranksystem.Permission;
 import de.tzimon.ranksystem.Rank;
 import de.tzimon.ranksystem.RankSystem;
 import de.tzimon.ranksystem.commands.utils.CommandUtil;
@@ -89,7 +90,18 @@ public class RankCommand extends Command {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThere are no ranks"));
             else {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + "§6§lRanks:"));
-                ranks.forEach(rank -> sender.sendMessage(new TextComponent(this.plugin.prefix + "§8- §a" + rank.getName())));
+
+                ranks.forEach(rank -> {
+                    final boolean isDefault = rank == this.rankManager.getDefaultRank();
+                    final StringBuilder messageBuilder = new StringBuilder();
+
+                    messageBuilder.append(this.plugin.prefix).append("§8- §7").append(rank.getName());
+
+                    if (isDefault)
+                        messageBuilder.append(" §7(§aDefault§7)");
+
+                    sender.sendMessage(new TextComponent(messageBuilder.toString()));
+                });
             }
         } else if (args.length == 2 && args[0].equalsIgnoreCase("info")) {
             if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.show"))) {
@@ -106,10 +118,19 @@ public class RankCommand extends Command {
             }
 
             final boolean isDefault = rank == this.rankManager.getDefaultRank();
+            final Set<Permission> permissions = rank.getPermissions();
 
             sender.sendMessage(new TextComponent(this.plugin.prefix + "§6§lInfo:"));
             sender.sendMessage(new TextComponent(this.plugin.prefix + "§7Name: §a" + rank.getName()));
             sender.sendMessage(new TextComponent(this.plugin.prefix + "§7Default: " + (isDefault ? "§aYes" : "§cNo")));
+
+            if (permissions.isEmpty())
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cNo permissions"));
+            else {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§7Permissions:"));
+                permissions.forEach(permission -> sender.sendMessage(new TextComponent(this.plugin.prefix + "§8- §7"
+                        + permission.getFullPath())));
+            }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("assign")) {
             if (!sender.hasPermission(this.configManager.getConfig().getString("permissions.rank.assign"))) {
                 sender.sendMessage(new TextComponent(this.plugin.prefix + this.plugin.noPermission));
@@ -220,6 +241,49 @@ public class RankCommand extends Command {
 
             if (sender != ProxyServer.getInstance().getConsole())
                 RankSystem.log(this.plugin.prefix + "§a" + sender.getName() + " §7made §a" + rank.getName() + " §7the default rank");
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("permission")) {
+            final String rankName = args[1];
+            final String permissionName = args[3].toLowerCase();
+
+            final Rank rank = this.rankManager.getRank(rankName);
+
+            if (rank == null) {
+                sender.sendMessage(new TextComponent(this.plugin.prefix + "§cThat rank does not exist"));
+                return;
+            }
+
+            final Permission permission;
+
+            try {
+                permission = Permission.get(permissionName);
+            } catch (IllegalArgumentException ignored) {
+                sender.sendMessage(new TextComponent("§cInvalid permission"));
+                return;
+            }
+
+            final String action;
+
+            switch (args[2].toLowerCase()) {
+                case "add":
+                    rank.getPermissions().add(permission);
+                    action = "added to";
+                    break;
+                case "remove":
+                    rank.getPermissions().remove(permission);
+                    action = "removed from";
+                    break;
+                default:
+                    CommandUtil.RANK.sendUsage(sender);
+                    return;
+            }
+
+            final String message = this.plugin.prefix + "§7The §a" + permissionName + " §7permission was " + action
+                    + " §7the §a" + rankName + " §7rank";
+
+            sender.sendMessage(new TextComponent(message));
+
+            if (sender != ProxyServer.getInstance().getConsole())
+                RankSystem.log(message + " by §a" + sender.getName());
         } else {
             CommandUtil.RANK.sendUsage(sender);
         }

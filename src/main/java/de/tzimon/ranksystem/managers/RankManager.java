@@ -10,6 +10,7 @@ import net.md_5.bungee.api.ProxyServer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class RankManager extends FileManager {
@@ -28,8 +29,11 @@ public class RankManager extends FileManager {
             final String path = "ranks." + rankName + ".";
             final Rank rank = this.createRank(ProxyServer.getInstance().getConsole(), rankName);
 
-            this.getConfig().getStringList(path + "permissions").forEach(permission ->
-                    rank.getPermissions().add(Permission.get(permission)));
+            this.getConfig().getStringList(path + "permissions").forEach(permission -> {
+                try {
+                    rank.getPermissions().add(Permission.get(permission));
+                } catch (IllegalArgumentException ignored) {}
+            });
         });
 
         if (this.getConfig().contains("default"))
@@ -44,7 +48,10 @@ public class RankManager extends FileManager {
 
         this.ranks.forEach(rank -> {
             final String path = "ranks." + rank.getName() + ".";
-            this.getConfig().set(path + "permissions", new ArrayList<>(rank.getPermissions()));
+            final List<String> permissions = new ArrayList<>();
+
+            rank.getPermissions().forEach(permission -> permissions.add(permission.getName()));
+            this.getConfig().set(path + "permissions", permissions);
         });
 
         if (this.defaultRank != null)

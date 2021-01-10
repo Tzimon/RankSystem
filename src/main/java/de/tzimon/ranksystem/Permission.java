@@ -15,7 +15,10 @@ public class Permission {
 
     private String fullPath;
 
-    public static Permission get(String name) {
+    public static Permission get(String name) throws IllegalArgumentException {
+        if (name.startsWith(".") || name.endsWith(".") || name.contains("..") || name.isEmpty())
+            throw new IllegalArgumentException("Invalid name");
+
         for (Permission permission : Permission.PERMISSIONS) {
             if (permission.getFullPath().equals(name))
                 return permission;

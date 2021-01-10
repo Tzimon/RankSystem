@@ -31,7 +31,7 @@ public enum CommandUtil {
                 this.sendUsageLine(sender, "rank revoke <player>", "Revokes the current and assigns the default rank to a player");
                 this.sendUsageLine(sender, "rank player <player>", "Shows the rank of a player");
                 this.sendUsageLine(sender, "rank default <rank>", "Sets the default rank");
-                this.sendUsageLine(sender, "rank permission add|remove <rank> <permission>", "Grants or revokes permissions to or from a rank");
+                this.sendUsageLine(sender, "rank permission <rank> add|remove <permission>", "Grants or revokes permissions to or from a rank");
                 this.sendUsageLine(sender, "rank priority <rank> <priority>", "Sets a rank's priority");
                 break;
             default:

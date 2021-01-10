@@ -17,8 +17,9 @@ public class PermissionLoader {
         permissions.addAll(PermissionLoader.loadExternalFile(RankSystem.getPlugin().getDataFolder() + "/" + PermissionLoader.EXTERNAL_FILE_NAME));
 
         for (String permission : permissions) {
-            if (!permission.equalsIgnoreCase(""))
+            try {
                 Permission.get(permission);
+            } catch (IllegalArgumentException ignored) {}
         }
     }
 
