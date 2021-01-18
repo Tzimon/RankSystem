@@ -15,19 +15,19 @@ public class Permission {
 
     private String fullPath;
 
-    public static Permission get(String name) throws IllegalArgumentException {
+    public static Permission get(final String name) throws IllegalArgumentException {
         if (name.startsWith(".") || name.endsWith(".") || name.contains("..") || name.isEmpty())
             throw new IllegalArgumentException("Invalid name");
 
-        for (Permission permission : Permission.PERMISSIONS) {
-            if (permission.getFullPath().equals(name))
+        for (final Permission permission : Permission.PERMISSIONS) {
+            if (permission.getFullPath().equalsIgnoreCase(name))
                 return permission;
         }
 
-        return new Permission(name);
+        return new Permission(name.toLowerCase());
     }
 
-    private Permission(String name) {
+    private Permission(final String name) {
         final String[] parts = name.split("\\.");
         final int length = parts.length;
 

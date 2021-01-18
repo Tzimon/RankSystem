@@ -104,7 +104,7 @@ public class RankManager extends FileManager {
         return new HashSet<>(this.ranks);
     }
 
-    public void setDefaultRank(CommandSender sender, Rank defaultRank) {
+    public void setDefaultRank(final CommandSender sender, final Rank defaultRank) {
         CustomPlayer.getCustomPlayers().values().forEach(player -> {
             if (player.getRank() == this.defaultRank)
                 player.setRank(defaultRank);

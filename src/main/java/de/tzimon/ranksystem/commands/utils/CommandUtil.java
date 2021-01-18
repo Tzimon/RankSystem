@@ -12,7 +12,7 @@ public enum CommandUtil {
 
     private final String name;
 
-    CommandUtil(String name) {
+    CommandUtil(final String name) {
         this.plugin = RankSystem.getPlugin();
 
         this.name = name;
